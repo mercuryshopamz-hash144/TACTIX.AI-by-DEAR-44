@@ -1,7 +1,7 @@
 import React from 'react';
 import { AnalysisReport } from '../types';
 import { TacticalField } from './TacticalField';
-import { ShieldAlert, Trophy, Target, TrendingUp, Zap, BarChart3, Crosshair } from 'lucide-react';
+import { ShieldAlert, Trophy, Target, TrendingUp, Zap, Crosshair } from 'lucide-react';
 import { TRANSLATIONS } from '../constants';
 
 interface Props {
@@ -17,7 +17,6 @@ const ProgressBar: React.FC<{ value: number; colorClass: string; animate?: boole
                 width: animate ? '0%' : `${value}%` 
             }}
         >
-             {/* Simple shimmer effect via CSS in styles could be added here */}
         </div>
         <style>{`
             @keyframes barFill-${value} {
@@ -216,6 +215,7 @@ export const AnalysisResult: React.FC<Props> = ({ report, language }) => {
                 </div>
             </div>
         </div>
+      </div>
 
       {/* RATIONALE FOOTER */}
       <div className="bg-ocean-900/30 border border-ocean-700/30 p-6 rounded-xl flex items-start gap-5 backdrop-blur-md">
