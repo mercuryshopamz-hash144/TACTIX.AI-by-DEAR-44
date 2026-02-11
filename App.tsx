@@ -174,7 +174,8 @@ const App: React.FC = () => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       try {
-        const base64String = reader.result?.toString().replace(/^data:image\/(.*);base64,/, '');
+        // Safe regex to handle jpeg, png, etc.
+        const base64String = reader.result?.toString().replace(/^data:image\/[a-zA-Z]+;base64,/, '');
         if (base64String) {
             const data = await scanScreenshot(base64String);
             

@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type, Schema, LiveServerMessage, Modality, Blob } from "@google/genai";
+import { GoogleGenAI, Type, Schema, LiveServerMessage, Modality, Blob as GenAIBlob } from "@google/genai";
 import { AnalysisReport, TeamData, ScannedTeamData, TutorialGuide, DocumentInsight, SimulationResult, TacticalSettings } from "../types";
 import { TACTIX_SYSTEM_IDENTITY, VISION_SCOUT_IDENTITY, COACH_ALPHA_IDENTITY, DOCMASTER_IDENTITY, SIMULATION_ENGINE_IDENTITY, OSM_KNOWLEDGE_BASE, VOICE_ASSISTANT_IDENTITY } from "../constants";
 
@@ -197,7 +197,7 @@ const simulationSchema: Schema = {
 };
 
 // --- AUDIO HELPERS ---
-function createBlob(data: Float32Array): Blob {
+function createBlob(data: Float32Array): GenAIBlob {
   const l = data.length;
   const int16 = new Int16Array(l);
   for (let i = 0; i < l; i++) {

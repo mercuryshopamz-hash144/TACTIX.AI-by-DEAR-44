@@ -149,58 +149,66 @@ export const SimulationRoom: React.FC<Props> = ({ result, onClose, language }) =
     playWhistle();
   };
 
-  // Match Loop
+  // Match Loop - Time Ticker
   useEffect(() => {
     if (simStage !== 'playing') return;
 
     const interval = setInterval(() => {
-        setMatchTime(prev => {
-            const nextTime = prev + 1;
-            
-            // Check for goals
-            const goal = goalTimes.current.find(g => g.time === nextTime);
-            if (goal) {
-                if (goal.team === 'home') setHomeScore(s => s + 1);
-                else setAwayScore(s => s + 1);
-                
-                setMatchLog(prevLog => [{
-                    time: nextTime,
-                    text: "GOAL!!! The stadium erupts!",
-                    type: 'goal'
-                }, ...prevLog]);
-                
-                playCrowdNoise(2000);
-            } 
-            // Random Events
-            else if (Math.random() > 0.96) {
-                const events = [
-                    "Dangerous attack...",
-                    "Great save by the keeper!",
-                    "Corner kick awarded.",
-                    "Midfield battle intensifying.",
-                    "Tactical adjustment detected.",
-                    "Shot hits the post!"
-                ];
-                const text = events[Math.floor(Math.random() * events.length)];
-                setMatchLog(prevLog => [{
-                    time: nextTime,
-                    text: text,
-                    type: text.includes("save") || text.includes("post") ? 'chance' : 'normal'
-                }, ...prevLog]);
-            }
-
-            if (nextTime >= 90) {
-                clearInterval(interval);
-                playWhistle();
-                setTimeout(() => setSimStage('finished'), 2000);
-                return 90;
-            }
-            return nextTime;
-        });
+      setMatchTime(prev => {
+        if (prev >= 90) {
+          clearInterval(interval);
+          return 90;
+        }
+        return prev + 1;
+      });
     }, 100); // Speed of simulation (100ms per minute)
 
     return () => clearInterval(interval);
   }, [simStage]);
+
+  // Match Logic - Side Effects based on Time
+  useEffect(() => {
+    if (simStage !== 'playing' || matchTime === 0) return;
+
+    // End Game Check
+    if (matchTime >= 90) {
+       playWhistle();
+       setTimeout(() => setSimStage('finished'), 2000);
+       return;
+    }
+
+    // Check for goals
+    const goal = goalTimes.current.find(g => g.time === matchTime);
+    if (goal) {
+        if (goal.team === 'home') setHomeScore(s => s + 1);
+        else setAwayScore(s => s + 1);
+        
+        setMatchLog(prevLog => [{
+            time: matchTime,
+            text: "GOAL!!! The stadium erupts!",
+            type: 'goal'
+        }, ...prevLog]);
+        
+        playCrowdNoise(2000);
+    } 
+    // Random Events (only if no goal this minute)
+    else if (Math.random() > 0.96) {
+        const events = [
+            "Dangerous attack...",
+            "Great save by the keeper!",
+            "Corner kick awarded.",
+            "Midfield battle intensifying.",
+            "Tactical adjustment detected.",
+            "Shot hits the post!"
+        ];
+        const text = events[Math.floor(Math.random() * events.length)];
+        setMatchLog(prevLog => [{
+            time: matchTime,
+            text: text,
+            type: text.includes("save") || text.includes("post") ? 'chance' : 'normal'
+        }, ...prevLog]);
+    }
+  }, [matchTime, simStage]);
 
   // Calculate widths for strength bars
   const totalPower = strengthAnalysis.myPower + strengthAnalysis.opponentPower;
@@ -452,6 +460,6 @@ export const SimulationRoom: React.FC<Props> = ({ result, onClose, language }) =
 
         </div>
       </div>
+    </div>
     );
-  }
 };

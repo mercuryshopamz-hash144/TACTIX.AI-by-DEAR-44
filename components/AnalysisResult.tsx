@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AnalysisReport } from '../types';
 import { TacticalField } from './TacticalField';
 import { ShieldAlert, Trophy, Target, TrendingUp, Zap, Crosshair } from 'lucide-react';
@@ -9,27 +9,34 @@ interface Props {
   language: 'en' | 'tr';
 }
 
-const ProgressBar: React.FC<{ value: number; colorClass: string; animate?: boolean }> = ({ value, colorClass, animate = true }) => (
-    <div className="h-4 w-full bg-slate-900/50 rounded-full overflow-hidden border border-slate-700/50 backdrop-blur-sm relative">
-        <div 
-            className={`h-full ${colorClass} ${animate ? 'animate-bar-fill' : ''} shadow-[0_0_10px_currentColor]`}
-            style={{ 
-                width: animate ? '0%' : `${value}%` 
-            }}
-        >
+const ProgressBar: React.FC<{ value: number; colorClass: string }> = ({ value, colorClass }) => {
+    const [width, setWidth] = useState(0);
+
+    useEffect(() => {
+        // Small timeout to ensure transition plays after mount
+        const timer = setTimeout(() => {
+            setWidth(Math.min(100, Math.max(0, value)));
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [value]);
+
+    return (
+        <div className="h-4 w-full bg-slate-900/50 rounded-full overflow-hidden border border-slate-700/50 backdrop-blur-sm relative">
+            <div 
+                className={`h-full ${colorClass} shadow-[0_0_10px_currentColor] transition-all duration-1500 ease-out`}
+                style={{ width: `${width}%` }}
+            >
+            </div>
+            {/* Shimmer effect overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 translate-x-[-100%] animate-[shine_2s_infinite]"></div>
+            <style>{`
+                @keyframes shine {
+                    100% { transform: translateX(200%); }
+                }
+            `}</style>
         </div>
-        <style>{`
-            @keyframes barFill-${value} {
-                from { width: 0%; }
-                to { width: ${value}%; }
-            }
-        `}</style>
-        <div 
-             className={`h-full ${colorClass} absolute top-0 left-0 opacity-80`}
-             style={{ animation: `barFill-${value} 1.5s ease-out forwards` }}
-        ></div>
-    </div>
-);
+    );
+};
 
 export const AnalysisResult: React.FC<Props> = ({ report, language }) => {
   const { opponentIntel, tacticalBattlePlan, gameManagement, prediction } = report;
