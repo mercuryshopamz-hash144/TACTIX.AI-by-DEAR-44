@@ -2,18 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { SimulationResult } from '../types';
 import { 
   Zap, 
-  ShieldCheck, 
   Activity, 
   BrainCircuit, 
   Trophy, 
   TrendingUp, 
   TrendingDown, 
-  AlertTriangle,
   Swords,
   X,
   Clock,
-  Play,
-  Volume2
+  Play
 } from 'lucide-react';
 import { TRANSLATIONS } from '../constants';
 
@@ -82,9 +79,6 @@ const playWhistle = () => {
 };
 
 const playCrowdNoise = (durationMs: number) => {
-    // Simulated crowd noise using filtered noise usually requires a buffer.
-    // We will simulate a "goal" cheer using simple noise if possible, or just skip complexity for now.
-    // Instead, let's try a simple rising noise for a goal.
     try {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         if (!AudioContext) return;
@@ -131,9 +125,11 @@ export const SimulationRoom: React.FC<Props> = ({ result, onClose, language }) =
   const [awayScore, setAwayScore] = useState(0);
   const [matchLog, setMatchLog] = useState<{time: number, text: string, type: 'goal'|'chance'|'card'|'normal'}[]>([]);
 
-  // Parse result score
+  // Parse result score safely
   const targetScore = prediction.score || "0-0";
-  const [targetHome, targetAway] = targetScore.split('-').map(s => parseInt(s.trim())) || [0, 0];
+  const scoreParts = targetScore.split('-');
+  const targetHome = scoreParts[0] ? parseInt(scoreParts[0].trim()) : 0;
+  const targetAway = scoreParts[1] ? parseInt(scoreParts[1].trim()) : 0;
   
   // Calculate Goal Times
   const goalTimes = useRef<{time: number, team: 'home'|'away'}[]>([]);
@@ -208,8 +204,8 @@ export const SimulationRoom: React.FC<Props> = ({ result, onClose, language }) =
 
   // Calculate widths for strength bars
   const totalPower = strengthAnalysis.myPower + strengthAnalysis.opponentPower;
-  const myPowerPct = (strengthAnalysis.myPower / totalPower) * 100;
-  const oppPowerPct = (strengthAnalysis.opponentPower / totalPower) * 100;
+  const myPowerPct = totalPower > 0 ? (strengthAnalysis.myPower / totalPower) * 100 : 50;
+  const oppPowerPct = totalPower > 0 ? (strengthAnalysis.opponentPower / totalPower) * 100 : 50;
 
   // --- MATCH SIMULATION VIEW ---
   if (simStage !== 'finished') {
